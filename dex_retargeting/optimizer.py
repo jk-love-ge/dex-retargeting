@@ -121,19 +121,19 @@ class PositionOptimizer(Optimizer):"""继承的Optimizer类，补全了get_objec
         self.opt.set_ftol_abs(1e-5)
 
     def get_objective_function(self, target_pos: np.ndarray, fixed_qpos: np.ndarray, last_qpos: np.ndarray):
-        qpos = np.zeros(self.num_joints)
+        qpos = np.zeros(self.num_joints) """初始化一个包含所有关节的tensor，例如21个，其中有18个需要优化"""
         qpos[self.idx_pin2fixed] = fixed_qpos
         torch_target_pos = torch.as_tensor(target_pos)
         torch_target_pos.requires_grad_(False)
 
-        def objective(x: np.ndarray, grad: np.ndarray) -> float:
-            qpos[self.idx_pin2target] = x
+        def objective(x: np.ndarray, grad: np.ndarray) -> float: """line85 ,x传入的是上一关节角度"""
+            qpos[self.idx_pin2target] = x   """为非固定关节赋值"""
 
             # Kinematics forwarding for qpos
             if self.adaptor is not None:
-                qpos[:] = self.adaptor.forward_qpos(qpos)[:]
+                qpos[:] = self.adaptor.forward_qpos(qpos)[:] """"转换为适配器所要求的格式或坐标系。这可以用于不同机器人模型之间的坐标系转换。"""
 
-            self.robot.compute_forward_kinematics(qpos)
+            self.robot.compute_forward_kinematics(qpos) """根据当前的关节位置计算机器人的姿态和末端执行器的位置""""
             target_link_poses = [self.robot.get_link_pose(index) for index in self.target_link_indices]
             body_pos = np.stack([pose[:3, 3] for pose in target_link_poses], axis=0)  # (n ,3)
 
