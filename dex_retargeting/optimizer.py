@@ -126,7 +126,7 @@ class PositionOptimizer(Optimizer):
         torch_target_pos = torch.as_tensor(target_pos)
         torch_target_pos.requires_grad_(False)
 
-        def objective(x: np.ndarray, grad: np.ndarray) -> float:
+        def objective(x: np.ndarray, grad: np.ndarray) -> float:   """返回一个函数"""
             qpos[self.idx_pin2target] = x
 
             # Kinematics forwarding for qpos
