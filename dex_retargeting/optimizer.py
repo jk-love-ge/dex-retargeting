@@ -15,22 +15,22 @@ class Optimizer:
     def __init__(
         self,
         robot: RobotWrapper,
-        target_joint_names: List[str],
+        target_joint_names: List[str], """我们需要优化的关节名称，没在列表里面的，我们默认它是固定的"""
         target_link_human_indices: np.ndarray,
     ):
-        self.robot = robot
-        self.num_joints = robot.dof
+        self.robot = robot """机器人实例化"""
+        self.num_joints = robot.dof """自由度=关节数"""
 
         joint_names = robot.dof_joint_names
         idx_pin2target = []
         for target_joint_name in target_joint_names:
             if target_joint_name not in joint_names:
                 raise ValueError(f"Joint {target_joint_name} given does not appear to be in robot XML.")
-            idx_pin2target.append(joint_names.index(target_joint_name))
+            idx_pin2target.append(joint_names.index(target_joint_name)) """保存需要优化的关节的索引"""
         self.target_joint_names = target_joint_names
         self.idx_pin2target = np.array(idx_pin2target)
 
-        self.idx_pin2fixed = np.array([i for i in range(robot.dof) if i not in idx_pin2target], dtype=int)
+        self.idx_pin2fixed = np.array([i for i in range(robot.dof) if i not in idx_pin2target], dtype=int) """固定关节索引"""
         self.opt = nlopt.opt(nlopt.LD_SLSQP, len(idx_pin2target))
         self.opt_dof = len(idx_pin2target)  # This dof includes the mimic joints
 
@@ -74,15 +74,15 @@ class Optimizer:
         Returns: joint position of robot, the joint order and dim is consistent with self.target_joint_names
 
         """
-        if len(fixed_qpos) != len(self.idx_pin2fixed):
+        if len(fixed_qpos) != len(self.idx_pin2fixed): """固定关节长度不能变"""
             raise ValueError(
                 f"Optimizer has {len(self.idx_pin2fixed)} joints but non_target_qpos {fixed_qpos} is given"
             )
-        objective_fn = self.get_objective_function(ref_value, fixed_qpos, np.array(last_qpos).astype(np.float32))
+        objective_fn = self.get_objective_function(ref_value, fixed_qpos, np.array(last_qpos).astype(np.float32)) """设置优化目标函数"""
 
-        self.opt.set_min_objective(objective_fn)
+        self.opt.set_min_objective(objective_fn) """输入模式为：最小化优化目标"""
         try:
-            qpos = self.opt.optimize(last_qpos)
+            qpos = self.opt.optimize(last_qpos) """执行优化过程，根据上一时刻动作，计算当前最优结果"""
             return np.array(qpos, dtype=np.float32)
         except RuntimeError as e:
             print(e)
@@ -98,7 +98,7 @@ class Optimizer:
         return [joint_names[i] for i in self.idx_pin2fixed]
 
 
-class PositionOptimizer(Optimizer):
+class PositionOptimizer(Optimizer):"""继承的Optimizer类，补全了get_objective_function方法"""
     retargeting_type = "POSITION"
 
     def __init__(
