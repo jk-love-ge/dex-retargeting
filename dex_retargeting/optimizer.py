@@ -210,7 +210,7 @@ class VectorOptimizer(Optimizer):
         self.computed_link_indices = self.get_link_indices(self.computed_link_names)
 
         self.opt.set_ftol_abs(1e-6)
-
+"""返回的是一个损失函数"""
     def get_objective_function(self, target_vector: np.ndarray, fixed_qpos: np.ndarray, last_qpos: np.ndarray):
         qpos = np.zeros(self.num_joints)
         qpos[self.idx_pin2fixed] = fixed_qpos
@@ -224,7 +224,7 @@ class VectorOptimizer(Optimizer):
             if self.adaptor is not None:
                 qpos[:] = self.adaptor.forward_qpos(qpos)[:]
 
-            self.robot.compute_forward_kinematics(qpos)
+            self.robot.compute_forward_kinematics(qpos)  """谁被传入正向运动学函数，谁就是优化目标，所以qpos就是优化目标，也是上面优化后的返回结果"""
             target_link_poses = [self.robot.get_link_pose(index) for index in self.computed_link_indices]
             body_pos = np.array([pose[:3, 3] for pose in target_link_poses])
 
